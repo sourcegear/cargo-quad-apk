@@ -21,12 +21,14 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
+#[derive(Debug)]
 pub struct SharedLibrary {
     pub abi: AndroidBuildTarget,
     pub path: PathBuf,
     pub filename: String,
 }
 
+#[derive(Debug)]
 pub struct SharedLibraries {
     pub shared_libraries: MultiMap<Target, SharedLibrary>,
 }
