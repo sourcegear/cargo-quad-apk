@@ -168,8 +168,19 @@ pub fn find_libunwind_dir(
     config: &AndroidConfig,
     build_target: AndroidBuildTarget,
 ) -> CargoResult<PathBuf> {
-    // TODO on macos, need to fix the path below, chg lib64 to lib
-    let libunwind_dir = llvm_toolchain_root(config).join("lib64").join("clang");
+    let libunwind_dir = 
+    {
+        let mut path = llvm_toolchain_root(config).join("lib64").join("clang");
+        if !path.exists()
+        {
+            path = llvm_toolchain_root(config).join("lib").join("clang");
+        }
+        if !path.exists()
+        {
+            panic!("Can't find path when looking for libunwind clang stuff");
+        }
+        path
+    };
     let clang_ver = libunwind_dir
         .read_dir()?
         .next()
