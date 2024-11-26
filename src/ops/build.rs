@@ -426,12 +426,14 @@ fn find_rt_jar() -> CargoResult<String> {
         "java"
     };
     let java_path = find_java_executable(java_filename)?;
+    println!("java path: {}", java_path.display());
 
     let mut res = None;
     let mut cmd = ProcessBuilder::new(&java_path)
         .arg("-verbose")
         .exec_with_streaming(
             &mut |stdout: &str| {
+                println!("got this: {}", stdout);
                 if stdout.contains("Opened") && stdout.contains("rt.jar") {
                     res = Some(stdout[8..stdout.len() - 1].to_string());
                 }
