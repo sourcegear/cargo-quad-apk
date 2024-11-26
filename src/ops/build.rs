@@ -387,30 +387,40 @@ fn build_apks(
 
 /// Find an executable that is part of the Java SDK
 fn find_java_executable(name: &str) -> CargoResult<PathBuf> {
-    // Look in PATH
-    env::var_os("PATH")
-        .and_then(|paths| {
-            env::split_paths(&paths)
-                .filter_map(|path| {
-                    let filepath = path.join(name);
-                    if fs::metadata(&filepath).is_ok() {
-                        Some(filepath)
-                    } else {
-                        None
-                    }
-                })
-                .next()
+    env::var_os("JAVA_HOME_8_X64")
+        .and_then(|java_home| {
+            let filepath = PathBuf::from(java_home).join("bin").join(name);
+            if filepath.exists() {
+                Some(filepath)
+            } else {
+                None
+            }
         })
         .or_else(||
-            // Look in JAVA_HOME
-            env::var_os("JAVA_HOME").and_then(|java_home| {
-                let filepath = PathBuf::from(java_home).join("bin").join(name);
-                if filepath.exists() {
-                    Some(filepath)
-                } else {
-                    None
-                }
-            }))
+            env::var_os("PATH")
+                .and_then(|paths| {
+                    env::split_paths(&paths)
+                        .filter_map(|path| {
+                            let filepath = path.join(name);
+                            if fs::metadata(&filepath).is_ok() {
+                                Some(filepath)
+                            } else {
+                                None
+                            }
+                        })
+                        .next()
+                })
+                .or_else(||
+                    // Look in JAVA_HOME
+                    env::var_os("JAVA_HOME").and_then(|java_home| {
+                        let filepath = PathBuf::from(java_home).join("bin").join(name);
+                        if filepath.exists() {
+                            Some(filepath)
+                        } else {
+                            None
+                        }
+                    }))
+        )
         .ok_or_else(|| {
             format_err!(
                 "Unable to find executable: '{}'. Configure PATH or JAVA_HOME with the path to the JRE or JDK.",
