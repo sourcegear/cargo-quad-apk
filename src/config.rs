@@ -279,12 +279,20 @@ pub fn load(
     };
 
     // Determine the NDK path
-    let ndk_path = env::var("NDK_HOME").map_err(|_| {
-        format_err!(
-            "Please set the path to the Android NDK with the \
-             $NDK_HOME environment variable."
-        )
-    })?;
+    let ndk_path = {
+        let mut path = env::var("ANDROID_NDK_HOME").ok();
+
+        if path.is_none() {
+            path = env::var("NDK_HOME").ok();
+        }
+
+        path.ok_or_else(|| {
+            format_err!(
+                "Please set the path to the Android NDK with either the $ANDROID_NDK_HOME or \
+                 the $NDK_HOME environment variable."
+            )
+        })?
+    };
 
     let sdk_path = {
         let mut sdk_path = env::var("ANDROID_SDK_HOME").ok();
